@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapsite - Buat Landing Page Visual, Cepat & Profesional</title>
+    
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E3A5F',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-sans antialiased text-slate-800 bg-slate-50">
+
+    <!-- Navbar -->
+    <header class="bg-white/80 backdrop-blur sticky top-0 z-40 border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2">
+                <span class="text-2xl font-black tracking-tight text-primary font-outfit">
+                    RAP<span class="text-secondary">SITE</span>
+                </span>
+            </a>
+            
+            <nav class="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-600">
+                <a href="#fitur" class="hover:text-primary transition">Fitur</a>
+                <a href="#harga" class="hover:text-primary transition">Harga</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                                    <a href="https://api.darimac.arieldaud.com/login" class="text-sm font-semibold text-primary hover:underline">Masuk</a>
+                    <a href="https://api.darimac.arieldaud.com/register" class="bg-primary hover:bg-primary/95 text-white text-xs font-semibold py-2 px-4 rounded-xl shadow-sm transition">Mulai Gratis</a>
+                            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="py-20 sm:py-28 bg-gradient-to-tr from-slate-100 via-slate-50 to-emerald-50/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <span class="inline-flex items-center gap-1.5 py-1 px-3 rounded-full text-xs font-bold bg-secondary/15 text-secondary uppercase tracking-wider mb-6">
+                🚀 Landing Page Builder Tercepat
+            </span>
+            <h1 class="text-4xl sm:text-6xl font-black tracking-tight text-slate-900 font-outfit max-w-4xl mx-auto leading-tight">
+                Buat Landing Page Profesional Dalam <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Hitungan Menit</span>
+            </h1>
+            <p class="mt-6 text-lg sm:text-xl text-slate-500 max-w-2xl mx-auto">
+                Rapsite membantu pemilik bisnis membuat landing page promosi secara visual dengan sistem analitik internal, pembayaran terintegrasi, dan custom domain.
+            </p>
+            <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+                <a href="https://api.darimac.arieldaud.com/register" class="bg-primary hover:bg-primary/90 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg transition">Mulai Gratis Sekarang</a>
+                <a href="#fitur" class="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-bold py-3.5 px-8 rounded-xl transition">Pelajari Fitur</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="fitur" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 font-outfit">Semua Kebutuhan Konversi Ada Di Sini</h2>
+                <p class="mt-4 text-slate-500">Rapsite dilengkapi dengan berbagai fitur premium terintegrasi untuk membantu bisnis Anda tumbuh.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Fitur 1 -->
+                <div class="p-8 bg-slate-50 border border-slate-100 rounded-2xl">
+                    <div class="h-12 w-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center font-bold text-xl mb-6">
+                        🎨
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 font-outfit">Builder Visual</h3>
+                    <p class="mt-3 text-sm text-slate-500 leading-relaxed">
+                        Susun landing page Anda secara visual menggunakan editor blok yang intuitif. Tanpa coding, tanpa pusing, desain langsung teruji responsif.
+                    </p>
+                </div>
+                <!-- Fitur 2 -->
+                <div class="p-8 bg-slate-50 border border-slate-100 rounded-2xl">
+                    <div class="h-12 w-12 bg-secondary/10 text-secondary rounded-xl flex items-center justify-center font-bold text-xl mb-6">
+                        📊
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 font-outfit">Analitik Real-time</h3>
+                    <p class="mt-3 text-sm text-slate-500 leading-relaxed">
+                        Sistem analitik dual-write mencatat setiap kunjungan dan klik CTA secara aman ke database lokal dan Google Sheets cadangan secara otomatis.
+                    </p>
+                </div>
+                <!-- Fitur 3 -->
+                <div class="p-8 bg-slate-50 border border-slate-100 rounded-2xl">
+                    <div class="h-12 w-12 bg-amber-500/10 text-accent rounded-xl flex items-center justify-center font-bold text-xl mb-6">
+                        🌐
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 font-outfit">Custom Domain & SSL</h3>
+                    <p class="mt-3 text-sm text-slate-500 leading-relaxed">
+                        Gunakan nama domain Anda sendiri (misal: bisnisku.com) lengkap dengan sertifikat SSL gratis otomatis dari Let's Encrypt demi keamanan.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="harga" class="py-20 bg-slate-50 border-t border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 font-outfit">Harga Plan yang Sederhana & Transparan</h2>
+                <p class="mt-4 text-slate-500">Mulai secara gratis dan upgrade kapan saja ketika bisnis Anda berkembang pesat.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+                <!-- Plan Free -->
+                <div class="p-8 bg-white border border-slate-200 rounded-3xl flex flex-col justify-between shadow-sm">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 font-outfit">Gratis</h3>
+                        <p class="mt-2 text-sm text-slate-400">Cocok untuk mencoba fitur Rapsite.</p>
+                        <div class="mt-6 flex items-baseline">
+                            <span class="text-3xl font-extrabold tracking-tight text-slate-900 font-outfit">Rp 0</span>
+                            <span class="ml-1 text-sm text-slate-400">/selamanya</span>
+                        </div>
+                        <ul class="mt-8 space-y-4">
+                            <li class="flex items-center text-sm text-slate-500 gap-2.5">
+                                <span class="text-secondary font-bold">✓</span> Batas 2 Landing Page
+                            </li>
+                            <li class="flex items-center text-sm text-slate-500 gap-2.5">
+                                <span class="text-secondary font-bold">✓</span> Subdomain Rapsite (rapsite.id/slug)
+                            </li>
+                            <li class="flex items-center text-sm text-slate-500 gap-2.5">
+                                <span class="text-secondary font-bold">✓</span> Analitik Dasar
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-8">
+                        <a href="https://api.darimac.arieldaud.com/register" class="block w-full text-center py-2.5 px-4 rounded-xl text-sm font-semibold border border-slate-200 hover:bg-slate-50 transition">Daftar Sekarang</a>
+                    </div>
+                </div>
+
+                <!-- Plan Pro -->
+                <div class="p-8 bg-white border-2 border-primary rounded-3xl flex flex-col justify-between shadow-md relative ring-2 ring-primary/5">
+                    <span class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] font-bold tracking-wider uppercase py-1 px-3 rounded-full">Paling Populer</span>
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 font-outfit">Pro</h3>
+                        <p class="mt-2 text-sm text-slate-400">Pilihan terbaik untuk bisnis berkembang.</p>
+                        <div class="mt-6 flex items-baseline">
+                            <span class="text-3xl font-extrabold tracking-tight text-slate-900 font-outfit">Rp 99.000</span>
+                            <span class="ml-1 text-sm text-slate-400">/bulan</span>
+                        </div>
+                        <ul class="mt-8 space-y-4">
+                            <li class="flex items-center text-sm text-slate-500 gap-2.5">
+                                <span class="text-secondary font-bold">✓</span> Batas 10 Landing Page
+                            </li>
+                            <li class="flex items-center text-sm text-slate-500 gap-2.5">
+                                <span class="text-secondary font-bold">✓</span> Custom Domain (misal: bisnismu.com)
+                            </li>
+                            <li class="flex items-center text-sm text-slate-500 gap-2.5">
+                                <span class="text-secondary font-bold">✓</span> Let's Encrypt SSL Gratis
+                            </li>
+                            <li class="flex items-center text-sm text-slate-500 gap-2.5">
+                                <span class="text-secondary font-bold">✓</span> Integrasi Analitik Cadangan (Sheets)
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-8">
+                        <a href="https://api.darimac.arieldaud.com/register" class="block w-full text-center py-2.5 px-4 rounded-xl text-sm font-semibold bg-primary hover:bg-primary-600 text-white transition shadow-sm">Upgrade Ke Pro</a>
+                    </div>
+                </div>
+
+                <!-- Plan Bisnis -->
+                <div class="p-8 bg-white border border-slate-200 rounded-3xl flex flex-col justify-between shadow-sm">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-900 font-outfit">Bisnis</h3>
+                        <p class="mt-2 text-sm text-slate-400">Solusi tanpa batas untuk bisnis profesional.</p>
+                        <div class="mt-6 flex items-baseline">
+                            <span class="text-3xl font-extrabold tracking-tight text-slate-900 font-outfit">Rp 249.000</span>
+                            <span class="ml-1 text-sm text-slate-400">/bulan</span>
+                        </div>
+                        <ul class="mt-8 space-y-4">
+                            <li class="flex items-center text-sm text-slate-500 gap-2.5">
+                                <span class="text-secondary font-bold">✓</span> Unlimited Landing Page
+                            </li>
+                            <li class="flex items-center text-sm text-slate-500 gap-2.5">
+                                <span class="text-secondary font-bold">✓</span> Banyak Custom Domain
+                            </li>
+                            <li class="flex items-center text-sm text-slate-500 gap-2.5">
+                                <span class="text-secondary font-bold">✓</span> Integrasi Lengkap & Prioritas
+                            </li>
+                            <li class="flex items-center text-sm text-slate-500 gap-2.5">
+                                <span class="text-secondary font-bold">✓</span> Bantuan Teknis Khusus 24/7
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="mt-8">
+                        <a href="https://api.darimac.arieldaud.com/register" class="block w-full text-center py-2.5 px-4 rounded-xl text-sm font-semibold border border-slate-200 hover:bg-slate-50 transition">Upgrade Ke Bisnis</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bottom Call To Action -->
+    <section class="py-20 bg-primary text-white text-center">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl sm:text-4xl font-extrabold font-outfit">Siap Melejitkan Konversi Bisnis Anda?</h2>
+            <p class="mt-4 text-slate-300">Daftar sekarang, buat landing page pertama Anda gratis selamanya tanpa kartu kredit.</p>
+            <div class="mt-8">
+                <a href="https://api.darimac.arieldaud.com/register" class="inline-block bg-secondary hover:bg-secondary-600 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg transition">Mulai Sekarang - Gratis</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-6">
+            <div class="flex items-center gap-2">
+                <span class="text-xl font-black text-white font-outfit">RAP<span class="text-secondary">SITE</span></span>
+            </div>
+            <p class="text-xs">&copy; 2026 Rapsite.id. Hak Cipta Dilindungi.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
