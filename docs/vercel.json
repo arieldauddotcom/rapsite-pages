@@ -1,0 +1,52 @@
+{
+    "rewrites": [
+        {
+            "source": "/api/:path*",
+            "destination": "https://api.arieldaud.com/api/:path*"
+        },
+        {
+            "source": "/webhook/:path*",
+            "destination": "https://api.arieldaud.com/webhook/:path*"
+        },
+        {
+            "source": "/login",
+            "destination": "https://api.arieldaud.com/login"
+        },
+        {
+            "source": "/register",
+            "destination": "https://api.arieldaud.com/register"
+        },
+        {
+            "source": "/logout",
+            "destination": "https://api.arieldaud.com/logout"
+        },
+        {
+            "source": "/dashboard/profile",
+            "destination": "https://api.arieldaud.com/dashboard/profile"
+        },
+        {
+            "source": "/dashboard/analytics",
+            "destination": "https://api.arieldaud.com/dashboard/analytics"
+        },
+        {
+            "source": "/dashboard/landing-pages",
+            "destination": "https://api.arieldaud.com/dashboard/landing-pages"
+        },
+        {
+            "source": "/dashboard/landing-pages/:path*",
+            "destination": "https://api.arieldaud.com/dashboard/landing-pages/:path*"
+        },
+        {
+            "source": "/dashboard/domain",
+            "destination": "https://api.arieldaud.com/dashboard/domain"
+        },
+        {
+            "source": "/dashboard/billing",
+            "destination": "https://api.arieldaud.com/dashboard/billing"
+        },
+        {
+            "source": "/dashboard/billing/:path*",
+            "destination": "https://api.arieldaud.com/dashboard/billing/:path*"
+        }
+    ]
+}

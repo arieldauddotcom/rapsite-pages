@@ -1,0 +1,17 @@
+# Proxy API and Webhook requests
+/api/*  https://api.arieldaud.com/api/:splat  200
+/webhook/*  https://api.arieldaud.com/webhook/:splat  200
+
+# Proxy Authentication
+/login  https://api.arieldaud.com/login  200
+/register  https://api.arieldaud.com/register  200
+/logout  https://api.arieldaud.com/logout  200
+
+# Proxy Dashboard views
+/dashboard/profile  https://api.arieldaud.com/dashboard/profile  200
+/dashboard/analytics  https://api.arieldaud.com/dashboard/analytics  200
+/dashboard/landing-pages  https://api.arieldaud.com/dashboard/landing-pages  200
+/dashboard/landing-pages/*  https://api.arieldaud.com/dashboard/landing-pages/:splat  200
+/dashboard/domain  https://api.arieldaud.com/dashboard/domain  200
+/dashboard/billing  https://api.arieldaud.com/dashboard/billing  200
+/dashboard/billing/*  https://api.arieldaud.com/dashboard/billing/:splat  200
