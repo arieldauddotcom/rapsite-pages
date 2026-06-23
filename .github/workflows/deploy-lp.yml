@@ -1,0 +1,30 @@
+name: Deploy Landing Page to GitHub Pages
+
+on:
+  repository_dispatch:
+    types: [deploy-landing-page]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Create Landing Page Directory
+        run: |
+          mkdir -p docs/${{ github.event.client_payload.slug }}
+
+      - name: Download Static Landing Page HTML
+        run: |
+          # Download HTML statis dari server lokal via Expose Link
+          curl -s -L "${{ secrets.RAPSITE_APP_URL }}/api/export/${{ github.event.client_payload.slug }}" -o "docs/${{ github.event.client_payload.slug }}/index.html"
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/
+          git commit -m "deploy: update landing page static folder for '${{ github.event.client_payload.slug }}'" || exit 0
+          git push origin main
