@@ -20,13 +20,13 @@ jobs:
       - name: Download Static HTML Files
         run: |
           # Download homepage static HTML
-          curl -s -L "${{ secrets.RAPSITE_APP_URL }}/api/export-homepage" -o "docs/index.html"
+          curl -k -s -L "${{ secrets.RAPSITE_APP_URL }}/api/export-homepage" -o "docs/index.html"
           
           # Download static dashboard wrapper HTML
-          curl -s -L "${{ secrets.RAPSITE_APP_URL }}/api/export-dashboard" -o "docs/dashboard/index.html"
+          curl -k -s -L "${{ secrets.RAPSITE_APP_URL }}/api/export-dashboard" -o "docs/dashboard/index.html"
           
           # Download client landing page HTML
-          curl -s -L "${{ secrets.RAPSITE_APP_URL }}/api/export/${{ github.event.client_payload.slug }}" -o "docs/${{ github.event.client_payload.slug }}/index.html"
+          curl -k -s -L "${{ secrets.RAPSITE_APP_URL }}/api/export/${{ github.event.client_payload.slug }}" -o "docs/${{ github.event.client_payload.slug }}/index.html"
 
       - name: Commit and Push Changes
         run: |
