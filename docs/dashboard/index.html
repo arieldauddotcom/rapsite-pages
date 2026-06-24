@@ -451,6 +451,7 @@
                 totalClicks: 0,
                 landingPages: [],
                 googleAppsScriptUrl: '',
+                googleSpreadsheetId: '',
                 selectedLpForOffline: '',
                 loadingOfflineSheets: false,
                 activeView: 'overview',
@@ -524,6 +525,7 @@
                         this.totalClicks = data.total_clicks;
                         this.landingPages = data.landing_pages;
                         this.googleAppsScriptUrl = data.google_apps_script_url;
+                        this.googleSpreadsheetId = data.google_spreadsheet_id || '';
 
                         if (this.landingPages && this.landingPages.length > 0) {
                             const published = this.landingPages.find(lp => lp.status === 'published');
@@ -570,6 +572,7 @@
                             this.totalVisitors = data.total_visitors || 0;
                             this.totalClicks = data.total_clicks || 0;
                             this.googleAppsScriptUrl = data.google_apps_script_url || (cachedData && cachedData.google_apps_script_url) || '';
+                            this.googleSpreadsheetId = data.google_spreadsheet_id || (cachedData && cachedData.google_spreadsheet_id) || '';
 
                             if (this.landingPages && this.landingPages.length > 0) {
                                 const published = this.landingPages.find(lp => lp.status === 'published');
@@ -614,6 +617,7 @@
                                     this.totalClicks = data.total_clicks;
                                     this.landingPages = data.landing_pages;
                                     this.googleAppsScriptUrl = data.google_apps_script_url;
+                                    this.googleSpreadsheetId = data.google_spreadsheet_id || '';
                                     
                                     localStorage.setItem('rapsite_cached_dashboard', JSON.stringify(data));
                                     
@@ -676,7 +680,7 @@
 
                     // If forceFetch is false, or we don't have cached events, or we want fresh fetch
                     if (forceFetch || !this.offlineAllEventsMap[lpId]) {
-                        const spreadsheetId = lp.config?.google_sheets?.spreadsheet_id || '';
+                        const spreadsheetId = lp.config?.google_sheets?.spreadsheet_id || this.googleSpreadsheetId || '';
                         const sheetName = lp.config?.google_sheets?.sheet_name || `Analytics_${lp.slug}`;
 
                         if (!spreadsheetId) {
@@ -726,7 +730,7 @@
                     this.offlineAllEventsMap = {};
 
                     const fetchPromises = publishedLps.map(async (lp) => {
-                        const spreadsheetId = lp.config?.google_sheets?.spreadsheet_id || '';
+                        const spreadsheetId = lp.config?.google_sheets?.spreadsheet_id || this.googleSpreadsheetId || '';
                         const sheetName = lp.config?.google_sheets?.sheet_name || `Analytics_${lp.slug}`;
                         if (!spreadsheetId) return;
 
@@ -1102,7 +1106,7 @@
     </script>
 
         <script id="rapsite-static-config" type="application/json">
-        {"user":{"name":"arap","plan":"free"},"landing_pages":[{"id":15,"title":"Kedai Kopi Nusantara","slug":"demo-kopi","status":"published","config":{"seo":{"meta_title":"Kedai Kopi Nusantara - Kopi Spesialitas Indonesia","favicon_url":"","meta_description":"Kopi premium pilihan diseduh oleh barista berpengalaman untuk hari Anda yang produktif."},"design":{"font":"Poppins","mode":"light","primary_color":"#1E3A5F","secondary_color":"#10B981"},"navbar":{"nav_links":[{"url":"#hero","label":"Home"},{"url":"#about","label":"Tentang Kami"},{"url":"#services","label":"Layanan"},{"url":"#contact","label":"Kontak"}],"show_navbar":true,"logo_in_navbar":false},"contact":{"cta_url":"","cta_type":"wa","whatsapp":"08123456789","cta_label":"Hubungi Kami via WhatsApp"},"identity":{"email":"halo@kopi-nusantara.com","phone":"08123456789","address":"Jl. Kopi Harum No. 45, Jakarta Selatan","tagline":"Cita Rasa Kopi Asli Nusantara dalam Setiap Cangkir","logo_url":"","business_name":"Kedai Kopi Nusantara"},"sections":[{"id":"hero","type":"hero","order":1,"content":{"title":"Rasa Kopi Nusantara Sebenarnya","bg_url":"","cta_url":"#services","cta_text":"Lihat Menu Kami","subtitle":"Dibuat dengan biji kopi arabika dan robusta pilihan langsung dari petani lokal."}},{"id":"about","type":"about","order":2,"content":{"title":"Tentang Kedai Kopi Nusantara","description":"Kami menyajikan kopi terbaik sejak 2020 dengan dedikasi tinggi terhadap kualitas rasa dan keberlanjutan petani kopi Indonesia."}},{"id":"services","type":"services","order":3,"content":{"items":[{"title":"Espresso Bar","description":"Nikmati cappucino, latte, dan espresso murni berkualitas tinggi."},{"title":"Manual Brew","description":"Penyeduhan kopi filter V60, Syphon, dan French Press dengan biji single origin."},{"title":"Roti Hangat","description":"Berbagai kue kering dan roti manis pendamping kopi Anda."}],"title":"Layanan Kami"}},{"id":"contact","type":"contact","order":4,"content":{"info":"Buka setiap hari mulai pukul 09.00 - 22.00 WIB. Nikmati suasana tenang dengan fasilitas Wi-Fi cepat.","title":"Kunjungi Kedai Kami"}}],"floating_cta":{"url":"https:\/\/wa.me\/628123456789","label":"Pesan Sekarang","enabled":true}}}],"google_apps_script_url":"https:\/\/script.google.com\/macros\/s\/AKfycbxLQfFmdnG6CzE0MDg_cGd3GXuJyZU0rAv1ab4kWe5NMc60uY3E7pOOz-NGiEgccjBtqQ\/exec"}
+        {"user":{"name":"arap","plan":"free"},"landing_pages":[{"id":15,"title":"Kedai Kopi Nusantara","slug":"demo-kopi","status":"published","config":{"seo":{"meta_title":"Kedai Kopi Nusantara - Kopi Spesialitas Indonesia","favicon_url":"","meta_description":"Kopi premium pilihan diseduh oleh barista berpengalaman untuk hari Anda yang produktif."},"design":{"font":"Poppins","mode":"light","primary_color":"#1E3A5F","secondary_color":"#10B981"},"navbar":{"nav_links":[{"url":"#hero","label":"Home"},{"url":"#about","label":"Tentang Kami"},{"url":"#services","label":"Layanan"},{"url":"#contact","label":"Kontak"}],"show_navbar":true,"logo_in_navbar":false},"contact":{"cta_url":"","cta_type":"wa","whatsapp":"08123456789","cta_label":"Hubungi Kami via WhatsApp"},"identity":{"email":"halo@kopi-nusantara.com","phone":"08123456789","address":"Jl. Kopi Harum No. 45, Jakarta Selatan","tagline":"Cita Rasa Kopi Asli Nusantara dalam Setiap Cangkir","logo_url":"","business_name":"Kedai Kopi Nusantara"},"sections":[{"id":"hero","type":"hero","order":1,"content":{"title":"Rasa Kopi Nusantara Sebenarnya","bg_url":"","cta_url":"#services","cta_text":"Lihat Menu Kami","subtitle":"Dibuat dengan biji kopi arabika dan robusta pilihan langsung dari petani lokal."}},{"id":"about","type":"about","order":2,"content":{"title":"Tentang Kedai Kopi Nusantara","description":"Kami menyajikan kopi terbaik sejak 2020 dengan dedikasi tinggi terhadap kualitas rasa dan keberlanjutan petani kopi Indonesia."}},{"id":"services","type":"services","order":3,"content":{"items":[{"title":"Espresso Bar","description":"Nikmati cappucino, latte, dan espresso murni berkualitas tinggi."},{"title":"Manual Brew","description":"Penyeduhan kopi filter V60, Syphon, dan French Press dengan biji single origin."},{"title":"Roti Hangat","description":"Berbagai kue kering dan roti manis pendamping kopi Anda."}],"title":"Layanan Kami"}},{"id":"contact","type":"contact","order":4,"content":{"info":"Buka setiap hari mulai pukul 09.00 - 22.00 WIB. Nikmati suasana tenang dengan fasilitas Wi-Fi cepat.","title":"Kunjungi Kedai Kami"}}],"floating_cta":{"url":"https:\/\/wa.me\/628123456789","label":"Pesan Sekarang","enabled":true}}}],"google_apps_script_url":"https:\/\/script.google.com\/macros\/s\/AKfycbxLQfFmdnG6CzE0MDg_cGd3GXuJyZU0rAv1ab4kWe5NMc60uY3E7pOOz-NGiEgccjBtqQ\/exec","google_spreadsheet_id":"1UxeUQxU4BV7f0MaEssrQkGxRIO8g3zWYd8jpXneEia0"}
     </script>
     </body>
 </html>
