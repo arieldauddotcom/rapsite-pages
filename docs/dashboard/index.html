@@ -229,25 +229,6 @@
                         </div>
                     </div>
 
-                    <!-- Offline sheets loading widget -->
-                    <div x-show="isMaintenance && googleAppsScriptUrl" class="p-6 bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Sinkronisasi Google Sheets Offline</h4>
-                            <p class="text-xs text-slate-400 mt-1">Muat ulang data statistik analitik secara langsung dari backup Google Sheets Anda.</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <select x-model="selectedLpForOffline" class="text-xs p-2 rounded-xl border border-slate-200 dark:border-slate-800 dark:bg-slate-800">
-                                <option value="">Pilih Landing Page...</option>
-                                <template x-for="lp in landingPages" :key="lp.id">
-                                    <option :value="lp.id" x-text="lp.title"></option>
-                                </template>
-                            </select>
-                            <button @click="syncOfflineAnalytics()" :disabled="!selectedLpForOffline || loadingOfflineSheets" class="px-4 py-2 bg-secondary text-white text-xs font-semibold rounded-xl disabled:opacity-50">
-                                <span x-show="!loadingOfflineSheets">Muat Data Sheets</span>
-                                <span x-show="loadingOfflineSheets">Memuat...</span>
-                            </button>
-                        </div>
-                    </div>
 
                     <!-- Chart & Recent Activities -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -318,11 +299,14 @@
                                     <button type="button" @click="offlineRange = 'all'; processOfflineEvents();" :class="offlineRange === 'all' ? 'bg-white text-slate-800 shadow-sm dark:bg-slate-700 dark:text-white' : 'text-slate-500 hover:text-slate-700'" class="px-3 py-1.5 text-xs font-semibold rounded-md transition">Semua</button>
                                 </div>
 
-                                <!-- Sync Button -->
-                                <button type="button" @click="syncOfflineAnalytics(true)" :disabled="!selectedLpForOffline || loadingOfflineSheets" class="inline-flex items-center gap-1.5 px-4 py-2 bg-secondary hover:bg-secondary-600 text-white text-xs font-semibold rounded-lg disabled:opacity-50 transition shadow-sm">
-                                    <span x-show="!loadingOfflineSheets">🔄 Muat Data Sheets</span>
-                                    <span x-show="loadingOfflineSheets">Memuat...</span>
-                                </button>
+                                <!-- Status Indicator -->
+                                <div class="flex items-center gap-1.5 text-xs text-slate-400" x-show="loadingOfflineSheets" style="display: none;">
+                                    <svg class="animate-spin h-4 w-4 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                    </svg>
+                                    <span>Menyinkronkan...</span>
+                                </div>
                             </div>
                         </div>
 
@@ -481,6 +465,7 @@
                 cachedEvents: [],
                 offlineError: '',
                 offlineAllEventsMap: {},
+                staticFallbackData: null,
                 offlineData: {
                     totalVisitors: 0,
                     totalClicks: 0,
@@ -502,6 +487,19 @@
                             }
                         }
                     });
+
+                    // Try to read static config script block if present
+                    const staticConfigEl = document.getElementById('rapsite-static-config');
+                    if (staticConfigEl) {
+                        try {
+                            const staticConfig = JSON.parse(staticConfigEl.textContent);
+                            if (staticConfig) {
+                                this.staticFallbackData = staticConfig;
+                            }
+                        } catch (e) {
+                            console.error('Failed to parse static config:', e);
+                        }
+                    }
 
                     // Try to fetch active dashboard data from Homeserver API
                     try {
@@ -556,18 +554,24 @@
                         console.warn('Homeserver is offline. Entering Maintenance/Offline mode.', error);
                         this.isMaintenance = true;
                         
-                        // Load cached data from LocalStorage
-                        const cachedDataStr = localStorage.getItem('rapsite_cached_dashboard');
-                        if (cachedDataStr) {
-                            const cached = JSON.parse(cachedDataStr);
-                            this.userName = cached.user.name;
-                            this.userPlan = cached.user.plan;
+                        // Load cached data from LocalStorage or static fallback config
+                        let data = this.staticFallbackData;
+                        if (!data) {
+                            const cachedDataStr = localStorage.getItem('rapsite_cached_dashboard');
+                            if (cachedDataStr) {
+                                data = JSON.parse(cachedDataStr);
+                            }
+                        }
+
+                        if (data) {
+                            this.userName = data.user?.name || 'User Rapsite';
+                            this.userPlan = data.user?.plan || 'FREE';
                             this.userInitials = this.userName.substring(0, 2).toUpperCase();
-                            this.totalLp = cached.total_lp;
-                            this.totalVisitors = cached.total_visitors;
-                            this.totalClicks = cached.total_clicks;
-                            this.landingPages = cached.landing_pages;
-                            this.googleAppsScriptUrl = cached.google_apps_script_url;
+                            this.landingPages = data.landing_pages || [];
+                            this.totalLp = this.landingPages.length;
+                            this.totalVisitors = data.total_visitors || 0;
+                            this.totalClicks = data.total_clicks || 0;
+                            this.googleAppsScriptUrl = data.google_apps_script_url || '';
 
                             if (this.landingPages && this.landingPages.length > 0) {
                                 const published = this.landingPages.find(lp => lp.status === 'published');
@@ -585,6 +589,7 @@
                             // Automatically fetch new events from Google Sheets backup for all LPs
                             this.autoSyncAllOfflineData();
                         });
+                    }
                     }
                 },
 
@@ -1052,5 +1057,9 @@
             }));
         });
     </script>
-</body>
+
+        <script id="rapsite-static-config" type="application/json">
+        {"user":{"name":"arap","plan":"free"},"landing_pages":[{"id":15,"title":"Kedai Kopi Nusantara","slug":"demo-kopi","status":"published","config":{"seo":{"meta_title":"Kedai Kopi Nusantara - Kopi Spesialitas Indonesia","favicon_url":"","meta_description":"Kopi premium pilihan diseduh oleh barista berpengalaman untuk hari Anda yang produktif."},"design":{"font":"Poppins","mode":"light","primary_color":"#1E3A5F","secondary_color":"#10B981"},"navbar":{"nav_links":[{"url":"#hero","label":"Home"},{"url":"#about","label":"Tentang Kami"},{"url":"#services","label":"Layanan"},{"url":"#contact","label":"Kontak"}],"show_navbar":true,"logo_in_navbar":false},"contact":{"cta_url":"","cta_type":"wa","whatsapp":"08123456789","cta_label":"Hubungi Kami via WhatsApp"},"identity":{"email":"halo@kopi-nusantara.com","phone":"08123456789","address":"Jl. Kopi Harum No. 45, Jakarta Selatan","tagline":"Cita Rasa Kopi Asli Nusantara dalam Setiap Cangkir","logo_url":"","business_name":"Kedai Kopi Nusantara"},"sections":[{"id":"hero","type":"hero","order":1,"content":{"title":"Rasa Kopi Nusantara Sebenarnya","bg_url":"","cta_url":"#services","cta_text":"Lihat Menu Kami","subtitle":"Dibuat dengan biji kopi arabika dan robusta pilihan langsung dari petani lokal."}},{"id":"about","type":"about","order":2,"content":{"title":"Tentang Kedai Kopi Nusantara","description":"Kami menyajikan kopi terbaik sejak 2020 dengan dedikasi tinggi terhadap kualitas rasa dan keberlanjutan petani kopi Indonesia."}},{"id":"services","type":"services","order":3,"content":{"items":[{"title":"Espresso Bar","description":"Nikmati cappucino, latte, dan espresso murni berkualitas tinggi."},{"title":"Manual Brew","description":"Penyeduhan kopi filter V60, Syphon, dan French Press dengan biji single origin."},{"title":"Roti Hangat","description":"Berbagai kue kering dan roti manis pendamping kopi Anda."}],"title":"Layanan Kami"}},{"id":"contact","type":"contact","order":4,"content":{"info":"Buka setiap hari mulai pukul 09.00 - 22.00 WIB. Nikmati suasana tenang dengan fasilitas Wi-Fi cepat.","title":"Kunjungi Kedai Kami"}}],"floating_cta":{"url":"https:\/\/wa.me\/628123456789","label":"Pesan Sekarang","enabled":true}}}],"google_apps_script_url":"https:\/\/script.google.com\/macros\/s\/AKfycbxLQfFmdnG6CzE0MDg_cGd3GXuJyZU0rAv1ab4kWe5NMc60uY3E7pOOz-NGiEgccjBtqQ\/exec"}
+    </script>
+    </body>
 </html>

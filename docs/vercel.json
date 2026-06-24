@@ -9,14 +9,6 @@
             "destination": "https://api.arieldaud.com/webhook/:path*"
         },
         {
-            "source": "/login",
-            "destination": "https://api.arieldaud.com/login"
-        },
-        {
-            "source": "/register",
-            "destination": "https://api.arieldaud.com/register"
-        },
-        {
             "source": "/logout",
             "destination": "https://api.arieldaud.com/logout"
         },

@@ -3,8 +3,6 @@
 /webhook/*  https://api.arieldaud.com/webhook/:splat  200
 
 # Proxy Authentication
-/login  https://api.arieldaud.com/login  200
-/register  https://api.arieldaud.com/register  200
 /logout  https://api.arieldaud.com/logout  200
 
 # Proxy Dashboard views
