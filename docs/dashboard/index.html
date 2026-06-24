@@ -746,6 +746,10 @@
                     this.offlineData.topSections = topSections;
                     this.offlineData.topButtons = topButtons;
 
+                    // Also sync to global overview stats so that the main overview dashboard reflects spreadsheet metrics while offline
+                    this.totalVisitors = visitorsCount;
+                    this.totalClicks = clicksCount;
+
                     // Generate chart labels and data
                     const labels = [];
                     const visitorsData = [];
@@ -769,6 +773,7 @@
                     // Render Chart.js line graph
                     this.$nextTick(() => {
                         this.renderOfflineChart(labels, visitorsData, clicksData);
+                        this.renderOverviewChart(labels, visitorsData);
                     });
                 },
 
@@ -834,6 +839,50 @@
                     });
                 },
 
+                // Render Overview Chart (uses global visitorChart element)
+                renderOverviewChart(labels, visitorsData) {
+                    const canvas = document.getElementById('visitorChart');
+                    if (!canvas) return;
+                    
+                    const ctx = canvas.getContext('2d');
+                    
+                    if (this.chartInstance) {
+                        this.chartInstance.destroy();
+                    }
+
+                    this.chartInstance = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Pengunjung',
+                                data: visitorsData,
+                                borderColor: '#10B981',
+                                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                                borderWidth: 3,
+                                fill: true,
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: 'rgba(148, 163, 184, 0.1)' }
+                                },
+                                x: {
+                                    grid: { display: false }
+                                }
+                            }
+                        }
+                    });
+                },
+ 
                 // Helper: Get date string
                 getPastDateString(daysAgo) {
                     const d = new Date();
