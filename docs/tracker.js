@@ -6,7 +6,7 @@
     const apiUrl = document.body.getAttribute('data-api-url') || '';
     const trackUrl = (apiUrl ? apiUrl.replace(/\/$/, '') : '') + '/api/track';
 
-    // Helper: Send event payload safely
+    // Helper: Send event payload safely with Google Sheets fallback
     function sendEvent(eventType, elementId = null) {
         const payload = {
             landing_page_id: lpId,
@@ -16,20 +16,60 @@
             user_agent: navigator.userAgent
         };
 
+        const sheetsUrl = document.body.getAttribute('data-sheets-url') || '';
+        const spreadsheetId = document.body.getAttribute('data-spreadsheet-id') || '';
+        const sheetName = document.body.getAttribute('data-sheet-name') || '';
+
+        // Fallback function: send directly to Google Sheets Web App
+        function sendToSheetsFallback() {
+            if (!sheetsUrl || !spreadsheetId || !sheetName) return;
+
+            const timestamp = new Date().toISOString();
+            // Format rowData matching Google Sheets columns:
+            // [Timestamp, Event Type, Element ID, Referrer, User Agent, IP Address, Country]
+            const rowData = [
+                timestamp,
+                eventType,
+                elementId || '',
+                payload.referrer,
+                payload.user_agent,
+                'Offline_Client', // Client-side fallback cannot hash raw IP securely, mock placeholder
+                'Offline_Local'
+            ];
+
+            const sheetsPayload = {
+                spreadsheet_id: spreadsheetId,
+                sheet_name: sheetName,
+                row_data: rowData
+            };
+
+            // Use fetch with no-cors to bypass preflight requests to Google script domain
+            fetch(sheetsUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(sheetsPayload)
+            }).catch(() => {});
+        }
+
         try {
-            if (navigator.sendBeacon) {
-                const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
-                navigator.sendBeacon(trackUrl, blob);
-            } else {
-                fetch(trackUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                    keepalive: true
-                }).catch(() => {}); // silent catch
-            }
+            // Always try the primary backend first
+            fetch(trackUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+                keepalive: true
+            }).then(response => {
+                if (!response.ok) {
+                    // Backend responded with error (e.g. 502, 503) -> send to Google Sheets
+                    sendToSheetsFallback();
+                }
+            }).catch(() => {
+                // Backend is down/offline -> send to Google Sheets
+                sendToSheetsFallback();
+            });
         } catch (e) {
-            // silent catch
+            sendToSheetsFallback();
         }
     }
 
