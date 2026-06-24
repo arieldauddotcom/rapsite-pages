@@ -6,14 +6,29 @@
     const apiUrl = document.body.getAttribute('data-api-url') || '';
     const trackUrl = (apiUrl ? apiUrl.replace(/\/$/, '') : '') + '/api/track';
 
+    // Helper to generate UUID v4
+    function generateUUID() {
+        try {
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                return crypto.randomUUID();
+            }
+        } catch (e) {}
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
     // Helper: Send event payload safely with Google Sheets fallback
     function sendEvent(eventType, elementId = null) {
+        const uuid = generateUUID();
         const payload = {
             landing_page_id: lpId,
             event_type: eventType,
             element_id: elementId,
             referrer: document.referrer || '',
-            user_agent: navigator.userAgent
+            user_agent: navigator.userAgent,
+            event_uuid: uuid
         };
 
         const sheetsUrl = document.body.getAttribute('data-sheets-url') || '';
@@ -26,7 +41,7 @@
 
             const timestamp = new Date().toISOString();
             // Format rowData matching Google Sheets columns:
-            // [Timestamp, Event Type, Element ID, Referrer, User Agent, IP Address, Country]
+            // [Timestamp, Event Type, Element ID, Referrer, User Agent, IP Address, Country, Event UUID]
             const rowData = [
                 timestamp,
                 eventType,
@@ -34,7 +49,8 @@
                 payload.referrer,
                 payload.user_agent,
                 'Offline_Client', // Client-side fallback cannot hash raw IP securely, mock placeholder
-                'Offline_Local'
+                'Offline_Local',
+                uuid
             ];
 
             const sheetsPayload = {
