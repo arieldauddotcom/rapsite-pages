@@ -69,6 +69,9 @@
                 
                 
                     <div x-data="{
+        apiUrl: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? `${window.location.protocol}//${window.location.host}`
+            : 'https://rapsite.arieldaud.com',
         email: '',
         password: '',
         remember: false,
@@ -82,7 +85,7 @@
             this.successMessage = '';
             
             try {
-                const response = await fetch('/login', {
+                const response = await fetch(`${this.apiUrl}/api/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -95,9 +98,18 @@
                     })
                 });
                 
+                if (!response.ok) {
+                    if (response.status >= 500 || response.status === 404 || response.status === 405) {
+                        throw new Error('Server offline or gateway error');
+                    }
+                    const data = await response.json();
+                    this.errorMessage = data.message || (data.errors && Object.values(data.errors)[0][0]) || 'Email atau password salah.';
+                    return;
+                }
+                
                 const data = await response.json();
                 
-                if (response.ok && data.status === 'success') {
+                if (data.status === 'success') {
                     this.successMessage = 'Masuk berhasil! Mengarahkan...';
                     
                     // Save to local storage for offline use
@@ -117,10 +129,10 @@
                     localStorage.setItem('rapsite_cached_dashboard', JSON.stringify(mockDashboard));
                     
                     setTimeout(() => {
-                        window.location.href = data.redirect || '/dashboard/';
+                        window.location.href = '/dashboard/';
                     }, 800);
                 } else {
-                    this.errorMessage = data.message || (data.errors && Object.values(data.errors)[0][0]) || 'Email atau password salah.';
+                    this.errorMessage = data.message || 'Email atau password salah.';
                 }
             } catch (err) {
                 console.warn('Backend offline, entering offline mode.', err);

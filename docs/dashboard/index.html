@@ -310,13 +310,7 @@
                             </div>
                         </div>
 
-                        <!-- Info Alert Badge -->
-                        <div x-show="googleAppsScriptUrl" class="bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-900 rounded-xl p-4 flex items-center gap-3 text-sm">
-                            <span class="inline-flex h-2.5 w-2.5 rounded-full bg-amber-500 shrink-0 animate-pulse"></span>
-                            <span>
-                                <strong>Mode Offline Aktif:</strong> Data analitik berikut disinkronkan secara langsung dari Google Sheets cadangan Anda menggunakan Google Apps Script Web App.
-                            </span>
-                        </div>
+                        <!-- Silent background auto-sync active -->
 
                         <!-- Error State -->
                         <div x-show="offlineError" class="bg-red-50 text-red-700 border border-red-200 rounded-xl p-4 text-sm" style="display: none;" x-text="offlineError"></div>
@@ -554,24 +548,28 @@
                         console.warn('Homeserver is offline. Entering Maintenance/Offline mode.', error);
                         this.isMaintenance = true;
                         
-                        // Load cached data from LocalStorage or static fallback config
-                        let data = this.staticFallbackData;
-                        if (!data) {
-                            const cachedDataStr = localStorage.getItem('rapsite_cached_dashboard');
-                            if (cachedDataStr) {
-                                data = JSON.parse(cachedDataStr);
+                        // Load cached data from LocalStorage and static fallback config
+                        const cachedDataStr = localStorage.getItem('rapsite_cached_dashboard');
+                        let cachedData = null;
+                        if (cachedDataStr) {
+                            try {
+                                cachedData = JSON.parse(cachedDataStr);
+                            } catch (e) {
+                                console.error('Failed to parse cached dashboard:', e);
                             }
                         }
+                        
+                        let data = this.staticFallbackData || cachedData;
 
                         if (data) {
-                            this.userName = data.user?.name || 'User Rapsite';
-                            this.userPlan = data.user?.plan || 'FREE';
+                            this.userName = (cachedData && cachedData.user?.name) || data.user?.name || 'User Rapsite';
+                            this.userPlan = (cachedData && cachedData.user?.plan) || data.user?.plan || 'FREE';
                             this.userInitials = this.userName.substring(0, 2).toUpperCase();
                             this.landingPages = data.landing_pages || [];
                             this.totalLp = this.landingPages.length;
                             this.totalVisitors = data.total_visitors || 0;
                             this.totalClicks = data.total_clicks || 0;
-                            this.googleAppsScriptUrl = data.google_apps_script_url || '';
+                            this.googleAppsScriptUrl = data.google_apps_script_url || (cachedData && cachedData.google_apps_script_url) || '';
 
                             if (this.landingPages && this.landingPages.length > 0) {
                                 const published = this.landingPages.find(lp => lp.status === 'published');
@@ -590,7 +588,52 @@
                             this.autoSyncAllOfflineData();
                         });
                     }
-                    }
+
+                    // Periodically check if the server is back online when in maintenance/offline mode
+                    setInterval(async () => {
+                        if (this.isMaintenance) {
+                            try {
+                                const response = await fetch(`${this.apiUrl}/api/dashboard-data`, {
+                                    method: 'GET',
+                                    credentials: 'include',
+                                    headers: {
+                                        'Accept': 'application/json'
+                                    }
+                                });
+                                
+                                if (response.ok) {
+                                    console.log('Server is back online! Re-syncing and returning to online mode...');
+                                    this.isMaintenance = false;
+                                    const data = await response.json();
+                                    
+                                    this.userName = data.user.name;
+                                    this.userPlan = data.user.plan;
+                                    this.userInitials = this.userName.substring(0, 2).toUpperCase();
+                                    this.totalLp = data.total_lp;
+                                    this.totalVisitors = data.total_visitors;
+                                    this.totalClicks = data.total_clicks;
+                                    this.landingPages = data.landing_pages;
+                                    this.googleAppsScriptUrl = data.google_apps_script_url;
+                                    
+                                    localStorage.setItem('rapsite_cached_dashboard', JSON.stringify(data));
+                                    
+                                    if (this.activeView === 'analytics') {
+                                        window.location.href = `${this.apiUrl}/dashboard/analytics`;
+                                        return;
+                                    }
+                                    
+                                    this.$nextTick(() => {
+                                        this.renderChart(
+                                            data.chart_data.map(d => d.label),
+                                            data.chart_data.map(d => d.count)
+                                        );
+                                    });
+                                }
+                            } catch (err) {
+                                // Still offline, ignore
+                            }
+                        }
+                    }, 10000);
                 },
 
                 // Redirect to backend routes if online
