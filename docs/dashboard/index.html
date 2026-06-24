@@ -480,6 +480,7 @@
                 offlineRange: '7d',
                 cachedEvents: [],
                 offlineError: '',
+                offlineAllEventsMap: {},
                 offlineData: {
                     totalVisitors: 0,
                     totalClicks: 0,
@@ -532,6 +533,13 @@
                         this.landingPages = data.landing_pages;
                         this.googleAppsScriptUrl = data.google_apps_script_url;
 
+                        if (this.landingPages && this.landingPages.length > 0) {
+                            const published = this.landingPages.find(lp => lp.status === 'published');
+                            if (published) {
+                                this.selectedLpForOffline = published.id;
+                            }
+                        }
+
                         // Save data locally for offline usage
                         localStorage.setItem('rapsite_cached_dashboard', JSON.stringify(data));
 
@@ -560,13 +568,22 @@
                             this.totalClicks = cached.total_clicks;
                             this.landingPages = cached.landing_pages;
                             this.googleAppsScriptUrl = cached.google_apps_script_url;
+
+                            if (this.landingPages && this.landingPages.length > 0) {
+                                const published = this.landingPages.find(lp => lp.status === 'published');
+                                if (published) {
+                                    this.selectedLpForOffline = published.id;
+                                }
+                            }
                         }
 
                         this.loading = false;
-
+ 
                         this.$nextTick(() => {
                             // Show static/empty chart initially
                             this.renderChart(['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'], [0, 0, 0, 0, 0, 0, 0]);
+                            // Automatically fetch new events from Google Sheets backup for all LPs
+                            this.autoSyncAllOfflineData();
                         });
                     }
                 },
@@ -602,23 +619,25 @@
                     this.loadingOfflineSheets = true;
                     this.offlineError = '';
                     
-                    const lp = this.landingPages.find(l => l.id == this.selectedLpForOffline);
+                    const lpId = this.selectedLpForOffline;
+                    const lp = this.landingPages.find(l => l.id == lpId);
                     if (!lp) {
                         this.loadingOfflineSheets = false;
                         return;
                     }
 
-                    const spreadsheetId = lp.config.google_sheets?.spreadsheet_id || '';
-                    const sheetName = lp.config.google_sheets?.sheet_name || `Analytics_${lp.slug}`;
+                    // If forceFetch is false, or we don't have cached events, or we want fresh fetch
+                    if (forceFetch || !this.offlineAllEventsMap[lpId]) {
+                        const spreadsheetId = lp.config?.google_sheets?.spreadsheet_id || '';
+                        const sheetName = lp.config?.google_sheets?.sheet_name || `Analytics_${lp.slug}`;
 
-                    if (!spreadsheetId) {
-                        this.offlineError = 'Spreadsheet ID tidak ditemukan untuk landing page ini. Silakan atur Spreadsheet ID di pengaturan landing page.';
-                        this.loadingOfflineSheets = false;
-                        return;
-                    }
+                        if (!spreadsheetId) {
+                            this.offlineError = 'Spreadsheet ID tidak ditemukan untuk landing page ini. Silakan atur Spreadsheet ID di pengaturan landing page.';
+                            this.loadingOfflineSheets = false;
+                            return;
+                        }
 
-                    try {
-                        if (forceFetch || !this.cachedEvents || this.cachedEvents.length === 0) {
+                        try {
                             // Request GET to Google Apps Script Web App
                             const response = await fetch(`${this.googleAppsScriptUrl}?action=read&spreadsheet_id=${spreadsheetId}&sheet_name=${sheetName}`);
                             if (!response.ok) throw new Error('Gagal mengambil data dari Web App Google Sheets');
@@ -627,22 +646,114 @@
                             if (result.status === 'error') {
                                 throw new Error(result.message || 'Error dari Google Apps Script');
                             }
-                            this.cachedEvents = result.data || [];
+                            
+                            if (!this.offlineAllEventsMap) this.offlineAllEventsMap = {};
+                            this.offlineAllEventsMap[lpId] = result.data || [];
+
+                        } catch (err) {
+                            console.error('Offline analytics load error:', err);
+                            this.offlineError = 'Gagal memuat analitik offline: ' + err.message;
+                            this.loadingOfflineSheets = false;
+                            return;
                         }
-
-                        // Process the events loaded in cachedEvents
-                        this.processOfflineEvents();
-
-                    } catch (err) {
-                        console.error('Offline analytics load error:', err);
-                        this.offlineError = 'Gagal memuat analitik offline: ' + err.message;
-                    } finally {
-                        this.loadingOfflineSheets = false;
                     }
+
+                    // Set cachedEvents to this page's events and process
+                    this.cachedEvents = this.offlineAllEventsMap[lpId] || [];
+                    this.processOfflineEvents();
+                    
+                    // Trigger global refresh to also sync the main Overview page
+                    this.processGlobalOfflineStats();
+                    
+                    this.loadingOfflineSheets = false;
+                },
+
+                // Auto-sync all offline data from sheets in parallel
+                async autoSyncAllOfflineData() {
+                    if (!this.googleAppsScriptUrl || !this.landingPages || this.landingPages.length === 0) return;
+
+                    const publishedLps = this.landingPages.filter(lp => lp.status === 'published');
+                    if (publishedLps.length === 0) return;
+
+                    this.offlineAllEventsMap = {};
+
+                    const fetchPromises = publishedLps.map(async (lp) => {
+                        const spreadsheetId = lp.config?.google_sheets?.spreadsheet_id || '';
+                        const sheetName = lp.config?.google_sheets?.sheet_name || `Analytics_${lp.slug}`;
+                        if (!spreadsheetId) return;
+
+                        try {
+                            const response = await fetch(`${this.googleAppsScriptUrl}?action=read&spreadsheet_id=${spreadsheetId}&sheet_name=${sheetName}`);
+                            if (!response.ok) return;
+                            const result = await response.json();
+                            if (result.status === 'ok' && result.data) {
+                                this.offlineAllEventsMap[lp.id] = result.data;
+                            }
+                        } catch (err) {
+                            console.warn(`Failed to auto-fetch sheet events for LP ${lp.title}:`, err);
+                        }
+                    });
+
+                    // Wait for all sheets to load in parallel
+                    await Promise.all(fetchPromises);
+
+                    // Compute global stats and update the overview dashboard
+                    this.processGlobalOfflineStats();
+                },
+
+                // Compute global stats and overview chart across all landing pages
+                processGlobalOfflineStats() {
+                    let totalVisitors = 0;
+                    let totalClicks = 0;
+                    const chartDates = {};
+
+                    // Pre-populate chart dates for the last 7 days
+                    for (let i = 6; i >= 0; i--) {
+                        const dateStr = this.getPastDateString(i);
+                        chartDates[dateStr] = 0;
+                    }
+
+                    if (this.offlineAllEventsMap) {
+                        Object.keys(this.offlineAllEventsMap).forEach(lpId => {
+                            const events = this.offlineAllEventsMap[lpId] || [];
+                            events.forEach(row => {
+                                if (row.length < 2) return;
+                                const timestampStr = row[0];
+                                const eventType = row[1];
+                                const dateStr = timestampStr.substring(0, 10);
+
+                                if (eventType === 'pageview') {
+                                    totalVisitors++;
+                                    if (dateStr in chartDates) {
+                                        chartDates[dateStr]++;
+                                    }
+                                } else if (eventType === 'cta_click') {
+                                    totalClicks++;
+                                }
+                            });
+                        });
+                    }
+
+                    this.totalVisitors = totalVisitors;
+                    this.totalClicks = totalClicks;
+
+                    // Update Overview Chart with combined data
+                    const labels = [];
+                    const data = [];
+                    for (let i = 6; i >= 0; i--) {
+                        const dateStr = this.getPastDateString(i);
+                        labels.push(this.getPastDateLabel(i));
+                        data.push(chartDates[dateStr]);
+                    }
+
+                    this.renderChart(labels, data);
                 },
 
                 // Helper: Process offline events from spreadsheet in-memory
                 processOfflineEvents() {
+                    if (this.selectedLpForOffline && (!this.cachedEvents || this.cachedEvents.length === 0)) {
+                        this.cachedEvents = this.offlineAllEventsMap[this.selectedLpForOffline] || [];
+                    }
                     const events = this.cachedEvents || [];
                     
                     // Determine date filter limit in milliseconds
