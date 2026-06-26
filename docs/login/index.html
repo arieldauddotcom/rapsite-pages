@@ -127,6 +127,7 @@
                         google_apps_script_url: ''
                     };
                     localStorage.setItem('rapsite_cached_dashboard', JSON.stringify(mockDashboard));
+                    localStorage.setItem('rapsite_last_active', Date.now().toString());
                     
                     setTimeout(() => {
                         window.location.href = '/dashboard/';
@@ -159,6 +160,7 @@
                     };
                 }
                 localStorage.setItem('rapsite_cached_dashboard', JSON.stringify(mockDashboard));
+                localStorage.setItem('rapsite_last_active', Date.now().toString());
                 
                 setTimeout(() => {
                     window.location.href = '/dashboard/';
