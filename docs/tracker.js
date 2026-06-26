@@ -1,4 +1,7 @@
 (function() {
+    // Abort if running inside an iframe (e.g. dashboard preview panels) to avoid recording owner views
+    if (window.self !== window.top) return;
+
     // 1. Get Landing Page ID
     const lpId = document.body.getAttribute('data-lp-id');
     if (!lpId) return;
