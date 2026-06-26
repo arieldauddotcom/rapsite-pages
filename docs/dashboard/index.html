@@ -496,7 +496,7 @@
                             console.warn('Local session expired due to 1 day of inactivity. Redirecting to login.');
                             localStorage.removeItem('rapsite_cached_dashboard');
                             localStorage.removeItem('rapsite_last_active');
-                            window.location.href = `${this.apiUrl}/login`;
+                            window.location.href = '/login';
                             return;
                         }
                     }
@@ -541,7 +541,7 @@
                             // Unauthorized -> clear local session caches and redirect to backend login page
                             localStorage.removeItem('rapsite_cached_dashboard');
                             localStorage.removeItem('rapsite_last_active');
-                            window.location.href = `${this.apiUrl}/login`;
+                            window.location.href = '/login';
                             return;
                         }
 
@@ -585,6 +585,11 @@
                         
                         // Load cached data from LocalStorage and static fallback config
                         const cachedDataStr = localStorage.getItem('rapsite_cached_dashboard');
+                        if (!cachedDataStr) {
+                            console.warn('No cached session found while offline. Redirecting to login.');
+                            window.location.href = '/login';
+                            return;
+                        }
                         let cachedData = null;
                         if (cachedDataStr) {
                             try {
@@ -685,9 +690,9 @@
                 // Logout and clear session cookies
                 logout() {
                     localStorage.removeItem('rapsite_last_active');
+                    localStorage.removeItem('rapsite_cached_dashboard');
                     if (this.isMaintenance) {
-                        localStorage.removeItem('rapsite_cached_dashboard');
-                        window.location.reload();
+                        window.location.href = '/login';
                         return;
                     }
                     // Create dynamic logout form
